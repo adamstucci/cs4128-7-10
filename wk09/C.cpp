@@ -4,13 +4,8 @@
 #include <map>
 #include <set>
 
-// Not working...must be doing something dumb
-// but gives you an idea of the structure
-// TODO debugging
-// fixed off by 1 errror...still buggy
-// first case fails for n = 5
-// but succeeds for n = 4
-// probably doing something wrong with modulus somewhere
+// Thanks to Raveen for fixing the issue with modular arithmetic for the
+// exponents of the primes
 
 using namespace std;
 typedef long long ll;
@@ -59,7 +54,13 @@ vector<pair<ll,ll>> primefactorize(ll x) {
     return factors;
 }
 
+inline long long modadd (long long a, long long b, long long m = bound-1) {
+    return (a + b) % m;
+}
 
+inline long long modmul (long long a, long long b, long long m = bound-1) {
+    return (a * b) % m;
+}
 
 // Implementation for square matrices.
 struct Matrix {
@@ -73,17 +74,16 @@ struct Matrix {
                 v[i].push_back(0);
     }
 
-    // don't think we want to take modulus of these multiplications
-    // it will screw up the prime powers
-    // i.e. don't want to push modulus into the exponent
-    // though should work for the first test case anyway since n is small
-    
+    // need to do the multiplication and addition under modulus
+    // but because they will be used to form the exponent of the prime
+    // need to take modulus (bound -1) rather than modulus bound
+
     Matrix operator*(const Matrix &o) const {
         Matrix res(n);
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
                 for (int k = 0; k < n; k++)
-                    res.v[i][j] += v[i][k] * o.v[k][j];
+                    res.v[i][j] = modadd(res.v[i][j], modmul(v[i][k], o.v[k][j]));
         return res;
     }
 
@@ -198,11 +198,12 @@ int main() {
     m.v[1][0] = 1; m.v[1][1] = 0; m.v[1][2] = 0;
     m.v[2][0] = 0; m.v[2][1] = 1; m.v[2][2] = 0;
 
-    m = m^(n-1); //think I had an off by 1 error before... should be n-1...still not working though
+    m = m^(n-1);
 
     map<ll, ll> hn;
     for (auto p : primes) {
-        hn.insert(make_pair(p, m.v[2][0]*h3[p] + m.v[2][1]*h2[p] + m.v[2][0]*h1[p])); //don't take modulus of this arithmetic. They are the exponents of the primes
+        // similarly to above modulus bound - 1
+        hn.insert(make_pair(p, modadd(modadd(modmul(m.v[2][0],h3[p]),modmul(m.v[2][1],h2[p])),modmul(m.v[2][2],h1[p]))));
     }
 
     ll gn = 1;
