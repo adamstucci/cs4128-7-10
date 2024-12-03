@@ -3,8 +3,9 @@
 #include <queue>
 #include <algorithm>
 
-// WARNING
-// fails test 6 on codeforces but I think the high level idea is good overall idea is good
+// Was originally failing because forgot to account for there being multiple
+// roads between two cities
+// Thanks Raveen for the debugging help
 
 using namespace std;
 typedef long long ll;
@@ -133,8 +134,8 @@ int main() {
     for (int i = 0; i < e; i++) {
         int a, b, t;
         scanf("%d %d %d", &a, &b, &t);
-        dist[a][b] = t;
-        dist[b][a] = t;
+        dist[a][b] = min(dist[a][b],(ll)t);
+        dist[b][a] = min(dist[b][a],(ll)t);
     }
 
     // compute all pairs shortest path
